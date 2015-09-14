@@ -8,9 +8,6 @@
 * **Why is this better than using an animated GIF?**  
   Videos look kind of gross when converted to animated GIFs because of the colors sampling. Also the file size of video GIFs can get pretty huge. GIF is just not made for videos. JPG does a much better job of compressing video frames. Also, animated GIFs don't give you any playback controls. You can't pause a GIF or delay it's playback. With canvid you can do that.
 
-* **Why only "relatively short" videos?**  
-  As you see further down, the container format for canvid is a big image sprite of all the frames of each clip. Sadly, iOS limits the maximum image size (bigger image get sampled down), so that puts a limit on the maximum frames you can store.
-
 * **Why is there no audio?**  
   canvid doesn't support audio for the same reason animated GIF doesn't support audio either: because that's not what it was built for. 
 
