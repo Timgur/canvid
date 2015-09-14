@@ -21,8 +21,8 @@
                 }
             },
             _opts = merge(defaultOptions, params),
-            el = document.querySelector(_opts.selector);
-        
+            el = typeof _opts.selector === 'string' ? document.querySelector(_opts.selector) : _opts.selector;
+
         if (!el) {
             return console.warn('Error. No element found for selector', _opts.selector);
         }
@@ -44,6 +44,7 @@
 
                     var img = images[key],
                         opts = _opts.videos[key],
+                        imageCount = Object.keys(_opts.videos).length,
                         frameWidth = img.width / opts.cols,
                         frameHeight = img.height / Math.ceil(opts.frames / opts.cols);
 
@@ -70,6 +71,11 @@
                         return playing;
                     };
 
+                    control.destroy = function(){
+                        control.pause();
+                        removeCanvid();
+                    };
+
                     if (firstPlay) {
                         firstPlay = false;
                         hideChildren();
@@ -81,7 +87,12 @@
                             curFrame = (+curFrame + (reverse ? -1 : 1));
                             if (curFrame < 0) curFrame += +opts.frames;
                             if (curFrame >= opts.frames) curFrame = 0;
-                            if (reverse ? curFrame == opts.frames - 1 : !curFrame) loops++;
+                            if (reverse ? curFrame == opts.frames - 1 : !curFrame) {
+                                loops++;
+                                key = loops%imageCount;
+                                opts = _opts.videos[key];
+                                img = images[key];
+                            }
                             if (opts.loops && loops >= opts.loops) playing = false;
                         }
                         wait = (wait + 1) % delay;
@@ -91,7 +102,7 @@
                     function drawFrame(f) {
                         var fx = Math.floor(f % opts.cols) * frameWidth,
                             fy = Math.floor(f / opts.cols) * frameHeight;
-                        
+
                         ctx.clearRect(0, 0, _opts.width, _opts.height); // clear frame
                         ctx.drawImage(img, fx, fy, frameWidth, frameHeight, 0, 0, _opts.width, _opts.height);
                     }
@@ -114,11 +125,11 @@
         function loadImages(imageList, callback) {
             var images = {},
                 imagesToLoad = Object.keys(imageList).length;
-            
+
             if(imagesToLoad === 0) {
-                return callback('You need to define at least one video object.'); 
+                return callback('You need to define at least one video object.');
             }
-              
+
             for (var key in imageList) {
                 images[key] = new Image();
                 images[key].onload = checkCallback;
@@ -146,20 +157,26 @@
         }
 
         function hideChildren() {
-            var children = [].slice.call(el.children);
-
-            children.forEach(function(child){
-                if(!child.classList.contains('canvid')){
+            [].forEach.call(el.children, function(child){
+                if(!child.classList.contains('canvid') ){
                     child.style.display = 'none';
                 }
             });
         }
 
+        function removeCanvid(){
+            [].forEach.call(el.children, function(child){
+                if(child.classList.contains('canvid') ){
+                    el.removeChild(child);
+                }
+            });
+        }
+
         function reqAnimFrame() {
-            return window.requestAnimationFrame 
-                || window.webkitRequestAnimationFrame 
-                || window.mozRequestAnimationFrame 
-                || window.msRequestAnimationFrame 
+            return window.requestAnimationFrame
+                || window.webkitRequestAnimationFrame
+                || window.mozRequestAnimationFrame
+                || window.msRequestAnimationFrame
                 || function(callback) {
                     return setTimeout(callback, 1000 / 60);
                 };
@@ -177,7 +194,7 @@
         }
 
         function merge() {
-            var obj = {}, 
+            var obj = {},
                 key;
 
             for (var i = 0; i < arguments.length; i++) {
